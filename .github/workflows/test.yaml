@@ -1,0 +1,31 @@
+name: Test
+
+on:
+  push:
+
+jobs:
+  build-container-image-production:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
+
+    steps:
+      - name: Build the image
+        id: build-image
+        run: |
+          # Build a docker container and push it to ECR so that it can be deployed to ECS.
+          imagename=$(date)
+          echo "image=$imagename" >> $GITHUB_OUTPUT
+
+  deploy-image-api:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: build-container-image-production
+    env:
+      IMAGE_ID: ${{ needs.build-container-image-production.outputs.image }}
+    steps:
+      - name: Build the image
+        id: build-image
+        run: |
+          echo $IMAGE_ID
